@@ -121,7 +121,9 @@ Cada usuário pode escolher seu tema na página de perfil. O tema é salvo no ba
 ## 👤 Autor
 
 **Carlos Gabriel dos Santos Modesto**  
-Engenheiro de Computação (2024)
+Mestrando em Engenharia Agrícola — UNESP/FCA Botucatu  
+Engenheiro de Computação — Faculdade Galileu (2024)  
+Bolsista CNPq
 
 [![Lattes](https://img.shields.io/badge/Lattes-CNPq-blue?style=flat-square)](http://lattes.cnpq.br/9699036690474846)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Conectar-0077B5?style=flat-square&logo=linkedin)](https://linkedin.com/in/SEU-LINKEDIN)

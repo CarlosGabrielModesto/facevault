@@ -1,0 +1,40 @@
+/* FaceVault — Tema: Obsidian | Azul Corporativo Profundo */
+:root {
+    --c-primary:      #2563eb;
+    --c-primary-d:    #1d4ed8;
+    --c-primary-l:    #eff6ff;
+    --c-primary-ring: rgba(37,99,235,.18);
+    --c-success:      #0f9f6e; --c-success-l: #ecfdf5;
+    --c-danger:       #dc2626; --c-danger-l:  #fef2f2;
+    --c-warning:      #d97706; --c-warning-l: #fff7ed;
+    --c-info:         #0891b2; --c-info-l:    #ecfeff;
+    --c-50:  #f4f7fb; --c-100: #eaf0f7; --c-200: #d8e1ec;
+    --c-300: #b7c4d4; --c-400: #7f90a6; --c-500: #58687d;
+    --c-700: #233247; --c-900: #0b1220;
+}
+.dark {
+    --c-primary:      #60a5fa;
+    --c-primary-d:    #3b82f6;
+    --c-primary-l:    #0f213d;
+    --c-primary-ring: rgba(96,165,250,.18);
+    --c-white: #0d1628; --c-50: #09111f; --c-100: #0d1628;
+    --c-200: #182438;  --c-300: #26354b; --c-400: #7f90a6;
+    --c-500: #9fb0c3;  --c-700: #d9e5f2; --c-900: #f3f7fd;
+    --c-success: #34d399; --c-success-l: #07281f;
+    --c-danger:  #f87171; --c-danger-l:  #2a1115;
+    --c-warning: #fbbf24; --c-warning-l: #2d2108;
+    --c-info:    #67e8f9; --c-info-l:    #07252d;
+}
+body { background: radial-gradient(circle at top left, rgba(37,99,235,.08), transparent 30%), radial-gradient(circle at bottom right, rgba(8,145,178,.06), transparent 26%), #f4f7fb; }
+.dark body { background: radial-gradient(circle at top left, rgba(59,130,246,.12), transparent 28%), #09111f; }
+.bg-orb--1 { background: #2563eb; }
+.bg-orb--2 { background: #0891b2; }
+.bg-orb--3 { background: #1d4ed8; }
+.navbar__brand { color: var(--c-primary); }
+.auth-brand { background: linear-gradient(145deg, #0b1220 0%, #13233b 45%, #0d4b8f 100%); border: 1px solid rgba(96,165,250,.18); }
+.auth-brand__icon { color: #93c5fd; }
+.auth-brand__features .material-symbols-rounded { color: #93c5fd; }
+.camera-guide { border-color: rgba(37,99,235,.6); }
+.progress-bar__fill { background: linear-gradient(90deg, #2563eb, #0891b2); }
+.task-checkbox:active .task-checkbox__ring { background: #2563eb; }
+@keyframes task-pulse { 0% { box-shadow: 0 0 0 0 rgba(37,99,235,.35); } 60% { box-shadow: 0 0 0 8px rgba(37,99,235,0); } 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); } }

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FaceVault{% endblock %} — FaceVault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% if current_user.is_authenticated and current_user.tema and current_user.tema != 'vault' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-' + current_user.tema + '.css') }}">
+    {% endif %}
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Orbs de fundo animados ── -->
+<div class="bg-orbs" aria-hidden="true">
+    <div class="bg-orb bg-orb--1"></div>
+    <div class="bg-orb bg-orb--2"></div>
+    <div class="bg-orb bg-orb--3"></div>
+</div>
+
+<!-- ── Navbar ── -->
+<nav class="navbar">
+    <a href="{{ url_for('tasks.index') if current_user.is_authenticated else url_for('auth.login') }}" class="navbar__brand">
+        <span class="material-symbols-rounded">enhanced_encryption</span>
+        <span>FaceVault</span>
+    </a>
+
+    <div class="navbar__right">
+        {% if current_user.is_authenticated %}
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn--ghost btn--sm">
+            <span class="material-symbols-rounded">admin_panel_settings</span> Admin
+        </a>
+        {% endif %}
+
+        <!-- Dropdown de perfil -->
+        <div class="profile-menu" id="profile-menu">
+            <button class="profile-trigger" onclick="toggleProfileMenu()">
+                <div class="avatar">{{ current_user.nome[0] }}{{ current_user.sobrenome[0] }}</div>
+                <span class="navbar__name">{{ current_user.nome }}</span>
+                <span class="material-symbols-rounded dropdown-arrow">expand_more</span>
+            </button>
+            <div class="profile-dropdown" id="profile-dropdown">
+                <div class="profile-dropdown__header">
+                    <strong>{{ current_user.nome_completo }}</strong>
+                    <small>{{ current_user.email }}</small>
+                </div>
+                <div class="profile-dropdown__divider"></div>
+                <a href="{{ url_for('profile.profile') }}" class="profile-dropdown__item">
+                    <span class="material-symbols-rounded">manage_accounts</span> Editar Perfil
+                </a>
+                <a href="{{ url_for('tasks.index') }}" class="profile-dropdown__item">
+                    <span class="material-symbols-rounded">assignment</span> Minhas Tarefas
+                </a>
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.dashboard') }}" class="profile-dropdown__item">
+                    <span class="material-symbols-rounded">admin_panel_settings</span> Painel Admin
+                </a>
+                {% endif %}
+                <div class="profile-dropdown__divider"></div>
+                <!-- Sair abre modal de confirmação em vez de redirecionar direto -->
+                <button onclick="confirmLogout()" class="profile-dropdown__item profile-dropdown__item--danger profile-dropdown__item--btn">
+                    <span class="material-symbols-rounded">logout</span> Sair
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <button class="theme-toggle" id="theme-toggle" title="Alternar tema" onclick="toggleTheme()">
+            <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+        </button>
+    </div>
+</nav>
+
+<!-- ── Conteúdo ── -->
+<main class="main">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- ── Rodapé ── -->
+<footer class="footer">
+    <span>FaceVault &copy; 2024</span>
+    <span class="footer__sep">·</span>
+    <span>Autenticação Facial com OpenCV &amp; Flask</span>
+</footer>
+
+<!-- ════════════════════════════════════════════════
+     MODAL DE MENSAGENS FLASH
+     Exibido automaticamente se houver mensagens
+════════════════════════════════════════════════ -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="modal-overlay" id="flash-overlay" onclick="closeFlashModal()">
+    <div class="modal" id="flash-modal" onclick="event.stopPropagation()">
+
+        {% for category, message in messages %}
+        <!-- Ícone dinâmico conforme o tipo da mensagem -->
+        <div class="modal__icon modal__icon--{{ category }}">
+            <span class="material-symbols-rounded">
+                {%- if category == 'success' %}check_circle
+                {%- elif category == 'danger'  %}error
+                {%- elif category == 'warning' %}warning
+                {%- else %}info{%- endif %}
+            </span>
+        </div>
+        <h3 class="modal__title">
+            {%- if category == 'success' %}Sucesso
+            {%- elif category == 'danger'  %}Atenção
+            {%- elif category == 'warning' %}Aviso
+            {%- else %}Informação{%- endif %}
+        </h3>
+        <p class="modal__body">{{ message }}</p>
+        {% endfor %}
+
+        <button class="btn btn--primary btn--block" onclick="closeFlashModal()">
+            <span class="material-symbols-rounded">check</span> OK
+        </button>
+    </div>
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- ════════════════════════════════════════════════
+     MODAL DE CONFIRMAÇÃO DE LOGOUT
+     Aberto pelo confirmLogout()
+════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="logout-overlay" style="display:none;" onclick="closeLogoutModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+
+        <div class="modal__icon modal__icon--warning">
+            <span class="material-symbols-rounded">logout</span>
+        </div>
+        <h3 class="modal__title">Sair do FaceVault?</h3>
+        <p class="modal__body">Sua sessão será encerrada e você precisará autenticar novamente para acessar suas tarefas.</p>
+
+        <div class="modal__actions">
+            <button class="btn btn--ghost btn--block" onclick="closeLogoutModal()">
+                <span class="material-symbols-rounded">arrow_back</span> Cancelar
+            </button>
+            <a href="{{ url_for('auth.logout') if current_user.is_authenticated else '#' }}"
+               class="btn btn--primary btn--block">
+                <span class="material-symbols-rounded">logout</span> Confirmar Saída
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCRIPTS GLOBAIS
+════════════════════════════════════════════════ -->
+<script>
+    // ── Tema ──────────────────────────────────────
+    (function () {
+        if (localStorage.getItem('fv-theme') === 'dark')
+            document.getElementById('html-root').classList.add('dark');
+    })();
+
+    function toggleTheme() {
+        const root   = document.getElementById('html-root');
+        const icon   = document.getElementById('theme-icon');
+        const isDark = root.classList.toggle('dark');
+        icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+        localStorage.setItem('fv-theme', isDark ? 'dark' : 'light');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const icon   = document.getElementById('theme-icon');
+        const isDark = document.getElementById('html-root').classList.contains('dark');
+        icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+    });
+
+    // ── Dropdown de perfil ─────────────────────────
+    function toggleProfileMenu() {
+        document.getElementById('profile-dropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('profile-menu');
+        if (menu && !menu.contains(e.target))
+            document.getElementById('profile-dropdown')?.classList.remove('open');
+    });
+
+    // ── Modal de flash ─────────────────────────────
+    function closeFlashModal() {
+        const overlay = document.getElementById('flash-overlay');
+        if (!overlay) return;
+        overlay.classList.add('modal-overlay--closing');
+        setTimeout(() => overlay.remove(), 280);
+    }
+
+    // Fecha com Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeFlashModal();
+            closeLogoutModal();
+        }
+    });
+
+    // ── Modal de logout ────────────────────────────
+    function confirmLogout() {
+        // Fecha o dropdown antes de abrir o modal
+        document.getElementById('profile-dropdown')?.classList.remove('open');
+        const overlay = document.getElementById('logout-overlay');
+        overlay.style.display = 'flex';
+        // Força reflow para a animação funcionar
+        overlay.offsetHeight;
+        overlay.classList.add('modal-overlay--open');
+    }
+
+    function closeLogoutModal() {
+        const overlay = document.getElementById('logout-overlay');
+        overlay.classList.remove('modal-overlay--open');
+        overlay.classList.add('modal-overlay--closing');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            overlay.classList.remove('modal-overlay--closing');
+        }, 280);
+    }
+
+    // Abre o modal de flash automaticamente se existir
+    document.addEventListener('DOMContentLoaded', () => {
+        const overlay = document.getElementById('flash-overlay');
+        if (overlay) {
+            overlay.style.display = 'flex';
+            overlay.offsetHeight;
+            overlay.classList.add('modal-overlay--open');
+        }
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

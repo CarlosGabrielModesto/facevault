@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% block title %}Configuração Inicial{% endblock %}
+
+{% block content %}
+<div class="auth-wrap auth-wrap--center">
+    <div class="auth-card auth-card--camera">
+
+        <div class="setup-badge">
+            <span class="material-symbols-rounded">admin_panel_settings</span>
+            Primeira Execução
+        </div>
+
+        <h2 class="auth-card__title">Criar Administrador</h2>
+        <p class="auth-card__sub">
+            Este wizard aparece apenas uma vez. Após criar o administrador, esta página
+            será desabilitada permanentemente.
+        </p>
+
+        <div id="alert-box" class="inline-alert" style="display:none;"></div>
+
+        <!-- Painel 1: Dados pessoais -->
+        <div id="panel-data">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Nome</label>
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">person</span>
+                        <input type="text" id="s-nome" class="form-input" placeholder="Nome">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sobrenome</label>
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">person</span>
+                        <input type="text" id="s-sobre" class="form-input" placeholder="Sobrenome">
+                    </div>
+                </div>
+                <div class="form-group form-group--span2">
+                    <label class="form-label">E-mail</label>
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">email</span>
+                        <input type="email" id="s-email" class="form-input" placeholder="admin@exemplo.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">CPF</label>
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">badge</span>
+                        <input type="text" id="s-cpf" class="form-input" maxlength="11" placeholder="11 dígitos" inputmode="numeric">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Celular (DDD)</label>
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">phone_android</span>
+                        <input type="text" id="s-cel" class="form-input" placeholder="14999998888" inputmode="numeric">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nascimento</label>
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">cake</span>
+                        <input type="text" id="s-nasc" class="form-input" placeholder="dd/mm/aaaa" inputmode="numeric">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Gênero</label>
+                    <select id="s-genero" class="form-input">
+                        <option value="Masculino">Masculino</option>
+                        <option value="Feminino">Feminino</option>
+                        <option value="Personalizado">Personalizado</option>
+                    </select>
+                </div>
+            </div>
+            <button id="btn-next" class="btn btn--primary btn--block">
+                Avançar para captura facial
+                <span class="material-symbols-rounded">arrow_forward</span>
+            </button>
+        </div>
+
+        <!-- Painel 2: Captura facial (oculto até avançar) -->
+        <div id="panel-camera" style="display:none;">
+            <p class="camera-tip">
+                <span class="material-symbols-rounded">lightbulb</span>
+                Centralize seu rosto no oval com boa iluminação
+            </p>
+            <div class="camera-box">
+                <video id="video" autoplay playsinline muted></video>
+                <div class="camera-guide"></div>
+                <canvas id="canvas" style="display:none;"></canvas>
+                <div class="camera-label">Posicione seu rosto aqui</div>
+            </div>
+            <button id="btn-capture" class="btn btn--primary btn--block">
+                <span class="material-symbols-rounded">photo_camera</span>
+                Capturar e Criar Administrador
+            </button>
+            <button id="btn-back" class="btn btn--ghost btn--block" style="margin-top:.5rem;">
+                <span class="material-symbols-rounded">arrow_back</span> Voltar aos dados
+            </button>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const alertBox  = document.getElementById('alert-box');
+    const panelData = document.getElementById('panel-data');
+    const panelCam  = document.getElementById('panel-camera');
+    const video     = document.getElementById('video');
+    const canvas    = document.getElementById('canvas');
+    const dtField   = document.getElementById('s-nasc');
+
+    // Formata data automaticamente
+    dtField.addEventListener('input', function () {
+        let v = this.value.replace(/\D/g, '');
+        if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+        if (v.length > 5) v = v.slice(0,5) + '/' + v.slice(5,9);
+        this.value = v;
+    });
+
+    function showAlert(msg, type='danger') {
+        alertBox.className = `inline-alert inline-alert--${type}`;
+        alertBox.textContent = msg;
+        alertBox.style.display = 'block';
+        setTimeout(() => alertBox.style.display = 'none', 6000);
+    }
+
+    // Avança para câmera após validar campos
+    document.getElementById('btn-next').addEventListener('click', async () => {
+        const fields = ['s-nome','s-sobre','s-email','s-cpf','s-cel','s-nasc'];
+        for (const id of fields) {
+            if (!document.getElementById(id).value.trim()) {
+                showAlert('Preencha todos os campos obrigatórios.'); return;
+            }
+        }
+        if (!/^\d{11}$/.test(document.getElementById('s-cpf').value)) {
+            showAlert('CPF deve ter exatamente 11 dígitos.'); return;
+        }
+        panelData.style.display = 'none';
+        panelCam.style.display  = 'block';
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode:'user', width:{ideal:640}, height:{ideal:480} }
+            });
+            video.srcObject = stream;
+        } catch {
+            showAlert('Câmera não disponível. Verifique as permissões.');
+        }
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => {
+        panelCam.style.display  = 'none';
+        panelData.style.display = 'block';
+        if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+    });
+
+    document.getElementById('btn-capture').addEventListener('click', async () => {
+        canvas.width  = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        const btn = document.getElementById('btn-capture');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span> Criando administrador...';
+
+        const payload = {
+            nome:            document.getElementById('s-nome').value.trim(),
+            sobrenome:       document.getElementById('s-sobre').value.trim(),
+            email:           document.getElementById('s-email').value.trim(),
+            cpf:             document.getElementById('s-cpf').value.trim(),
+            celular:         document.getElementById('s-cel').value.trim(),
+            data_nascimento: document.getElementById('s-nasc').value.trim(),
+            genero:          document.getElementById('s-genero').value,
+            face_data:       canvas.toDataURL('image/png'),
+        };
+
+        try {
+            const res  = await fetch('/setup', { method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify(payload) });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showAlert(data.message, 'success');
+                setTimeout(() => window.location.href = '/login', 2000);
+            } else {
+                showAlert(data.message);
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-rounded">photo_camera</span> Capturar e Criar Administrador';
+            }
+        } catch {
+            showAlert('Erro de conexão.');
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-rounded">photo_camera</span> Capturar e Criar Administrador';
+        }
+    });
+});
+</script>
+{% endblock %}

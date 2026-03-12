@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% block title %}Meu Perfil{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <header class="dash-header">
+        <div class="dash-header__info">
+            <div class="avatar avatar--lg">{{ current_user.nome[0] }}{{ current_user.sobrenome[0] }}</div>
+            <div>
+                <h1 class="dash-header__title">Meu Perfil</h1>
+                <p class="dash-header__sub">Edite seus dados e atualize seu rosto de referência</p>
+            </div>
+        </div>
+        <a href="{{ url_for('tasks.index') }}" class="btn btn--ghost btn--sm">
+            <span class="material-symbols-rounded">arrow_back</span> Voltar
+        </a>
+    </header>
+
+    <div class="profile-grid">
+
+        <!-- Card de dados pessoais -->
+        <div class="profile-card">
+            <h3 class="profile-card__title">
+                <span class="material-symbols-rounded">edit_note</span> Dados Pessoais
+            </h3>
+            <p class="profile-card__note">CPF e e-mail não podem ser alterados (identificadores únicos).</p>
+
+            <form method="POST" action="{{ url_for('profile.update_profile') }}" novalidate>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nome</label>
+                        <div class="input-row">
+                            <span class="material-symbols-rounded input-row__icon">person</span>
+                            <input type="text" name="nome" class="form-input" value="{{ user.nome }}" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sobrenome</label>
+                        <div class="input-row">
+                            <span class="material-symbols-rounded input-row__icon">person</span>
+                            <input type="text" name="sobrenome" class="form-input" value="{{ user.sobrenome }}" required>
+                        </div>
+                    </div>
+                    <!-- E-mail somente leitura -->
+                    <div class="form-group form-group--span2">
+                        <label class="form-label">E-mail <span class="badge badge--gray">Fixo</span></label>
+                        <div class="input-row">
+                            <span class="material-symbols-rounded input-row__icon">email</span>
+                            <input type="email" class="form-input form-input--readonly" value="{{ user.email }}" readonly>
+                        </div>
+                    </div>
+                    <!-- CPF somente leitura -->
+                    <div class="form-group">
+                        <label class="form-label">CPF <span class="badge badge--gray">Fixo</span></label>
+                        <div class="input-row">
+                            <span class="material-symbols-rounded input-row__icon">badge</span>
+                            <input type="text" class="form-input form-input--readonly" value="{{ user.cpf }}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Celular</label>
+                        <div class="input-row">
+                            <span class="material-symbols-rounded input-row__icon">phone_android</span>
+                            <input type="text" name="celular" class="form-input" value="{{ user.celular }}" required inputmode="numeric">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nascimento</label>
+                        <div class="input-row">
+                            <span class="material-symbols-rounded input-row__icon">cake</span>
+                            <input type="text" name="data_nascimento" id="dt_nasc" class="form-input"
+                                   value="{{ user.data_nascimento.strftime('%d/%m/%Y') }}" required inputmode="numeric">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gênero</label>
+                        <select name="genero" class="form-input">
+                            <option {% if user.genero=='Masculino' %}selected{% endif %}>Masculino</option>
+                            <option {% if user.genero=='Feminino' %}selected{% endif %}>Feminino</option>
+                            <option {% if user.genero=='Personalizado' %}selected{% endif %}>Personalizado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <span></span>
+                    <button type="submit" class="btn btn--primary">
+                        <span class="material-symbols-rounded">save</span> Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Card de atualização facial -->
+        <div class="profile-card">
+            <h3 class="profile-card__title">
+                <span class="material-symbols-rounded">face</span> Rosto de Referência
+            </h3>
+            <p class="profile-card__note">Atualize a imagem que o sistema usa para reconhecê-lo no login.</p>
+
+            <div id="face-alert" class="inline-alert" style="display:none;"></div>
+
+            <div class="camera-box">
+                <video id="video" autoplay playsinline muted></video>
+                <div class="camera-guide"></div>
+                <canvas id="canvas" style="display:none;"></canvas>
+                <div class="camera-label">Centralize seu rosto</div>
+            </div>
+
+            <button id="btn-update-face" class="btn btn--primary btn--block">
+                <span class="material-symbols-rounded">photo_camera</span>
+                Capturar Nova Imagem
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Seletor de Tema ── -->
+<div style="max-width:960px; margin: var(--s6) auto 0;">
+    <div class="profile-card">
+        <h2 class="profile-card__title">
+            <span class="material-symbols-rounded">palette</span>
+            Tema Visual
+        </h2>
+        <p class="profile-card__note">
+            Escolha a aparência do FaceVault. O tema é salvo na sua conta e aplicado em todos os dispositivos.
+        </p>
+
+        <form method="POST" action="{{ url_for('profile.update_tema') }}" id="tema-form">
+            <div class="tema-grid">
+                {% set temas = [
+                    ('vault',    'Vault',    '#10b981', '#059669', '#0f172a', 'Verde-esmeralda sobre Slate escuro. Segurança e acesso verificado.'),
+                    ('obsidian', 'Obsidian', '#2563eb', '#0891b2', '#0b1220', 'Azul corporativo profundo. Elegante e sofisticado.'),
+                    ('cyber',    'Cyber',    '#0ea5e9', '#6366f1', '#0f172a', 'Sky Blue vibrante com efeito de scanner biométrico.'),
+                    ('terminal', 'Terminal', '#0284c7', '#38bdf8', '#09090b', 'Zinc + Sky. Visual de software profissional e rígido.')
+                ] %}
+                {% for key, nome, cor1, cor2, bg, desc in temas %}
+                <label class="tema-card {% if current_user.tema == key %}tema-card--active{% endif %}">
+                    <input type="radio" name="tema" value="{{ key }}"
+                           {% if current_user.tema == key %}checked{% endif %}
+                           onchange="document.getElementById('tema-form').submit()">
+                    <!-- Preview em miniatura -->
+                    <div class="tema-preview" style="background: {{ bg }};">
+                        <div class="tema-preview__bar" style="background: rgba(255,255,255,.08); border-bottom: 2px solid {{ cor1 }};"></div>
+                        <div class="tema-preview__content">
+                            <div class="tema-preview__line" style="background: {{ cor1 }}; width: 55%; height: 6px; border-radius: 3px; margin-bottom: 5px;"></div>
+                            <div class="tema-preview__line" style="background: rgba(255,255,255,.15); width: 80%; height: 4px; border-radius: 2px; margin-bottom: 4px;"></div>
+                            <div class="tema-preview__line" style="background: rgba(255,255,255,.10); width: 65%; height: 4px; border-radius: 2px; margin-bottom: 8px;"></div>
+                            <div style="display:flex; gap: 4px;">
+                                <div style="flex:1; height:28px; background: {{ cor1 }}; border-radius: 4px; opacity:.9;"></div>
+                                <div style="flex:1; height:28px; background: {{ cor2 }}; border-radius: 4px; opacity:.6;"></div>
+                                <div style="flex:1; height:28px; background: rgba(255,255,255,.08); border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        {% if current_user.tema == key %}
+                        <div class="tema-preview__badge">
+                            <span class="material-symbols-rounded">check_circle</span> Ativo
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="tema-info">
+                        <strong>{{ nome }}</strong>
+                        <span>{{ desc }}</span>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    // Formata data
+    document.getElementById('dt_nasc').addEventListener('input', function() {
+        let v = this.value.replace(/\D/g,'');
+        if (v.length > 2) v = v.slice(0,2)+'/'+v.slice(2);
+        if (v.length > 5) v = v.slice(0,5)+'/'+v.slice(5,9);
+        this.value = v;
+    });
+
+    const video   = document.getElementById('video');
+    const canvas  = document.getElementById('canvas');
+    const alert   = document.getElementById('face-alert');
+    const btn     = document.getElementById('btn-update-face');
+
+    function showAlert(msg, type='danger') {
+        alert.className = `inline-alert inline-alert--${type}`;
+        alert.textContent = msg;
+        alert.style.display = 'block';
+        setTimeout(() => alert.style.display='none', 5000);
+    }
+
+    // Inicia câmera ao carregar
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+        video.srcObject = stream;
+    } catch { showAlert('Câmera não disponível.'); btn.disabled=true; }
+
+    btn.addEventListener('click', async () => {
+        canvas.width  = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span> Processando...';
+
+        try {
+            const res  = await fetch('/profile/update_face', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({face_data: canvas.toDataURL('image/png')})
+            });
+            const data = await res.json();
+            showAlert(data.message, data.status === 'success' ? 'success' : 'danger');
+        } catch { showAlert('Erro de conexão.'); }
+
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-rounded">photo_camera</span> Capturar Nova Imagem';
+    });
+});
+</script>
+{% endblock %}

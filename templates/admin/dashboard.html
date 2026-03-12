@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% block title %}Painel Admin{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+
+    <header class="dash-header">
+        <div class="dash-header__info">
+            <div class="avatar avatar--lg admin-avatar">
+                <span class="material-symbols-rounded">admin_panel_settings</span>
+            </div>
+            <div>
+                <h1 class="dash-header__title">Painel de Administração</h1>
+                <p class="dash-header__sub">Gerencie usuários e monitore o sistema</p>
+            </div>
+        </div>
+        <a href="{{ url_for('tasks.index') }}" class="btn btn--ghost btn--sm">
+            <span class="material-symbols-rounded">dashboard</span> Meu Dashboard
+        </a>
+    </header>
+
+    <!-- Cards de estatísticas -->
+    <div class="stats stats--6">
+        <div class="stat-card stat-card--blue">
+            <span class="material-symbols-rounded">group</span>
+            <div><strong>{{ stats.total_users }}</strong><small>Usuários Total</small></div>
+        </div>
+        <div class="stat-card stat-card--green">
+            <span class="material-symbols-rounded">check_circle</span>
+            <div><strong>{{ stats.active_users }}</strong><small>Contas Ativas</small></div>
+        </div>
+        <div class="stat-card stat-card--red">
+            <span class="material-symbols-rounded">block</span>
+            <div><strong>{{ stats.blocked_users }}</strong><small>Bloqueadas</small></div>
+        </div>
+        <div class="stat-card stat-card--orange">
+            <span class="material-symbols-rounded">shield_person</span>
+            <div><strong>{{ stats.admin_users }}</strong><small>Admins</small></div>
+        </div>
+        <div class="stat-card stat-card--blue">
+            <span class="material-symbols-rounded">assignment</span>
+            <div><strong>{{ stats.total_tasks }}</strong><small>Tarefas Total</small></div>
+        </div>
+        <div class="stat-card stat-card--green">
+            <span class="material-symbols-rounded">task_alt</span>
+            <div><strong>{{ stats.done_tasks }}</strong><small>Concluídas</small></div>
+        </div>
+    </div>
+
+    <!-- Barra de busca -->
+    <div class="admin-toolbar">
+        <form method="GET" class="search-form">
+            <div class="input-row search-row">
+                <span class="material-symbols-rounded input-row__icon">search</span>
+                <input type="text" name="q" value="{{ q }}" class="form-input"
+                       placeholder="Buscar por nome, e-mail ou CPF...">
+            </div>
+            <button type="submit" class="btn btn--primary btn--sm">Buscar</button>
+            {% if q %}<a href="{{ url_for('admin.dashboard') }}" class="btn btn--ghost btn--sm">Limpar</a>{% endif %}
+        </form>
+    </div>
+
+    <!-- Tabela de usuários -->
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Usuário</th>
+                    <th>CPF</th>
+                    <th>Celular</th>
+                    <th>Cadastro</th>
+                    <th>Status</th>
+                    <th>Nível</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for user in users %}
+            <tr class="{% if not user.is_active %}row--blocked{% endif %}">
+                <td class="td-id">{{ user.id }}</td>
+                <td>
+                    <div class="user-cell">
+                        <div class="avatar avatar--sm">{{ user.nome[0] }}{{ user.sobrenome[0] }}</div>
+                        <div>
+                            <strong>{{ user.nome_completo }}</strong>
+                            {% if user.id == current_user.id %}
+                            <span class="badge-you">Você</span>
+                            {% endif %}
+                            <br><small>{{ user.email }}</small>
+                        </div>
+                    </div>
+                </td>
+                <td><code>{{ user.cpf }}</code></td>
+                <td>{{ user.celular }}</td>
+                <td><small>{{ user.criado_em.strftime('%d/%m/%Y') }}</small></td>
+                <td>
+                    <span class="badge {% if user.is_active %}badge--green{% else %}badge--red{% endif %}">
+                        {{ user.status_label }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge {% if user.is_admin %}badge--purple{% else %}badge--gray{% endif %}">
+                        {% if user.is_admin %}Admin{% else %}Usuário{% endif %}
+                    </span>
+                </td>
+                <td>
+                    <div class="admin-actions">
+                        {% if user.id != current_user.id %}
+
+                        <!-- Ativar / Bloquear -->
+                        <button type="button"
+                            class="btn btn--icon {% if user.is_active %}btn--warning-ghost{% else %}btn--success-ghost{% endif %}"
+                            title="{% if user.is_active %}Bloquear conta{% else %}Ativar conta{% endif %}"
+                            onclick="adminConfirm(
+                                '{% if user.is_active %}block{% else %}check_circle{% endif %}',
+                                '{% if user.is_active %}warning{% else %}success{% endif %}',
+                                '{% if user.is_active %}Bloquear conta?{% else %}Ativar conta?{% endif %}',
+                                '{% if user.is_active %}A conta de {{ user.nome_completo }} será bloqueada e o usuário não conseguirá mais fazer login.{% else %}A conta de {{ user.nome_completo }} será reativada.{% endif %}',
+                                '{% if user.is_active %}Bloquear{% else %}Ativar{% endif %}',
+                                '{{ url_for('admin.toggle_active', user_id=user.id) }}'
+                            )">
+                            <span class="material-symbols-rounded">
+                                {% if user.is_active %}block{% else %}check_circle{% endif %}
+                            </span>
+                        </button>
+
+                        <!-- Promover / Rebaixar admin -->
+                        <button type="button"
+                            class="btn btn--icon btn--ghost"
+                            title="{% if user.is_admin %}Remover permissão admin{% else %}Tornar administrador{% endif %}"
+                            onclick="adminConfirm(
+                                '{% if user.is_admin %}person_remove{% else %}shield_person{% endif %}',
+                                'info',
+                                '{% if user.is_admin %}Remover Admin?{% else %}Tornar Admin?{% endif %}',
+                                '{% if user.is_admin %}{{ user.nome_completo }} perderá acesso ao painel de administração.{% else %}{{ user.nome_completo }} terá acesso total ao painel de administração.{% endif %}',
+                                '{% if user.is_admin %}Remover{% else %}Promover{% endif %}',
+                                '{{ url_for('admin.toggle_admin', user_id=user.id) }}'
+                            )">
+                            <span class="material-symbols-rounded">
+                                {% if user.is_admin %}person_remove{% else %}shield_person{% endif %}
+                            </span>
+                        </button>
+
+                        <!-- Excluir usuário -->
+                        <button type="button"
+                            class="btn btn--icon btn--danger-ghost"
+                            title="Excluir usuário"
+                            onclick="adminConfirm(
+                                'delete_forever',
+                                'danger',
+                                'Excluir usuário?',
+                                'A conta de {{ user.nome_completo }} e todas as suas tarefas serão removidas permanentemente. Esta ação não pode ser desfeita.',
+                                'Excluir',
+                                '{{ url_for('admin.delete_user', user_id=user.id) }}'
+                            )">
+                            <span class="material-symbols-rounded">delete</span>
+                        </button>
+
+                        {% else %}
+                        <span class="text-muted-sm">—</span>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="td-empty">Nenhum usuário encontrado.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ── Modal de confirmação de ações admin ── -->
+<div class="modal-overlay" id="admin-overlay" style="display:none;" onclick="closeAdminModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal__icon" id="admin-modal-icon">
+            <span class="material-symbols-rounded" id="admin-modal-icon-name">warning</span>
+        </div>
+        <h3 class="modal__title" id="admin-modal-title">Confirmar ação</h3>
+        <p class="modal__body" id="admin-modal-body">Tem certeza?</p>
+        <div class="modal__actions">
+            <button class="btn btn--ghost btn--block" onclick="closeAdminModal()">
+                <span class="material-symbols-rounded">close</span> Cancelar
+            </button>
+            <a id="admin-modal-confirm" href="#" class="btn btn--primary btn--block">
+                Confirmar
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function adminConfirm(icon, type, title, body, confirmLabel, url) {
+    // Preenche o modal com os dados da ação
+    document.getElementById('admin-modal-icon-name').textContent = icon;
+    document.getElementById('admin-modal-title').textContent     = title;
+    document.getElementById('admin-modal-body').textContent      = body;
+    document.getElementById('admin-modal-confirm').textContent   = confirmLabel;
+    document.getElementById('admin-modal-confirm').href          = url;
+
+    // Define a cor do ícone conforme o tipo
+    const iconEl = document.getElementById('admin-modal-icon');
+    iconEl.className = 'modal__icon modal__icon--' + type;
+
+    // Troca a cor do botão de confirmar para danger quando for exclusão
+    const confirmBtn = document.getElementById('admin-modal-confirm');
+    if (type === 'danger') {
+        confirmBtn.className = 'btn btn--block';
+        confirmBtn.style.cssText = 'background:var(--c-danger);color:#fff;border-color:var(--c-danger);width:100%;justify-content:center;';
+    } else {
+        confirmBtn.className = 'btn btn--primary btn--block';
+        confirmBtn.style.cssText = '';
+    }
+
+    // Abre o modal com animação
+    const overlay = document.getElementById('admin-overlay');
+    overlay.style.display = 'flex';
+    overlay.offsetHeight; // força reflow para animação
+    overlay.classList.add('modal-overlay--open');
+}
+
+function closeAdminModal() {
+    const overlay = document.getElementById('admin-overlay');
+    overlay.classList.remove('modal-overlay--open');
+    overlay.classList.add('modal-overlay--closing');
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        overlay.classList.remove('modal-overlay--closing');
+    }, 280);
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeAdminModal();
+});
+</script>
+{% endblock %}

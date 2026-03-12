@@ -1,0 +1,23 @@
+# Ambiente virtual
+venv/ env/ .venv/ __pycache__/ *.pyc *.pyo
+
+# Banco de dados local
+instance/ *.db *.sqlite3
+
+# Imagens faciais (dados sensíveis de usuários — NUNCA versionar)
+captured_images/
+
+# Variáveis de ambiente (segredos — NUNCA versionar)
+.env .env.*
+
+# IDEs
+.vscode/ .idea/ *.swp
+
+# Sistema
+.DS_Store Thumbs.db
+
+# Logs
+*.log logs/
+
+# Modelos DeepFace baixados automaticamente (pesados demais para o git)
+.deepface/

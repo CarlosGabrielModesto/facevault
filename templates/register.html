@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Cadastro{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+
+    <!-- Painel de branding -->
+    <div class="auth-brand">
+        <span class="material-symbols-rounded auth-brand__icon">person_add</span>
+        <h1 class="auth-brand__title">Crie sua conta</h1>
+        <p class="auth-brand__desc">Preencha seus dados para acessar o FaceVault com segurança facial</p>
+
+        <ul class="auth-brand__features">
+            <li>
+                <span class="material-symbols-rounded">verified_user</span>
+                Dados protegidos localmente
+            </li>
+            <li>
+                <span class="material-symbols-rounded">no_photography</span>
+                Imagem facial nunca enviada para serviços externos
+            </li>
+            <li>
+                <span class="material-symbols-rounded">speed</span>
+                Login rápido após cadastro
+            </li>
+        </ul>
+    </div>
+
+    <!-- Card do formulário de registro -->
+    <div class="auth-card auth-card--wide">
+        <h2 class="auth-card__title">Seus dados</h2>
+        <p class="auth-card__sub">Após preencher, você capturará seu rosto</p>
+
+        <!-- Formulário com proteção CSRF do Flask-WTF -->
+        <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Grid de 2 colunas para campos menores -->
+            <div class="form-grid">
+
+                <div class="form-group">
+                    {{ form.nome.label(class='form-label') }}
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">person</span>
+                        {{ form.nome(class='form-input', placeholder='Seu nome') }}
+                    </div>
+                    <!-- Mensagens de erro de validação WTForms -->
+                    {% for e in form.nome.errors %}<span class="form-err">{{ e }}</span>{% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.sobrenome.label(class='form-label') }}
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">person</span>
+                        {{ form.sobrenome(class='form-input', placeholder='Seu sobrenome') }}
+                    </div>
+                    {% for e in form.sobrenome.errors %}<span class="form-err">{{ e }}</span>{% endfor %}
+                </div>
+
+                <!-- E-mail ocupa largura total no grid -->
+                <div class="form-group form-group--span2">
+                    {{ form.email.label(class='form-label') }}
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">email</span>
+                        {{ form.email(class='form-input', placeholder='seuemail@exemplo.com') }}
+                    </div>
+                    {% for e in form.email.errors %}<span class="form-err">{{ e }}</span>{% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.cpf.label(class='form-label') }}
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">badge</span>
+                        {{ form.cpf(class='form-input', placeholder='11 dígitos', maxlength=11, inputmode='numeric') }}
+                    </div>
+                    {% for e in form.cpf.errors %}<span class="form-err">{{ e }}</span>{% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.celular.label(class='form-label') }}
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">phone_android</span>
+                        {{ form.celular(class='form-input', placeholder='Ex: 14999998888', inputmode='numeric') }}
+                    </div>
+                    {% for e in form.celular.errors %}<span class="form-err">{{ e }}</span>{% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.data_nascimento.label(class='form-label') }}
+                    <div class="input-row">
+                        <span class="material-symbols-rounded input-row__icon">cake</span>
+                        {{ form.data_nascimento(class='form-input', placeholder='dd/mm/aaaa', id='dt_nasc', inputmode='numeric') }}
+                    </div>
+                    {% for e in form.data_nascimento.errors %}<span class="form-err">{{ e }}</span>{% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.genero.label(class='form-label') }}
+                    <!-- Select sem ícone posicionado à esquerda -->
+                    {{ form.genero(class='form-input') }}
+                    {% for e in form.genero.errors %}<span class="form-err">{{ e }}</span>{% endfor %}
+                </div>
+
+            </div>
+
+            <!-- Ações: voltar ou avançar para captura facial -->
+            <div class="form-actions">
+                <a href="{{ url_for('auth.login') }}" class="btn btn--ghost">
+                    <span class="material-symbols-rounded">arrow_back</span> Voltar
+                </a>
+                {{ form.submit(class='btn btn--primary') }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Formata o campo de data automaticamente enquanto o usuário digita (dd/mm/aaaa)
+    document.getElementById('dt_nasc').addEventListener('input', function () {
+        // Remove tudo que não for dígito
+        let v = this.value.replace(/\D/g, '');
+        // Insere as barras separadoras nas posições corretas
+        if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+        if (v.length > 5) v = v.slice(0, 5) + '/' + v.slice(5, 9);
+        this.value = v;
+    });
+</script>
+{% endblock %}

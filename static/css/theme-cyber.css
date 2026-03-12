@@ -1,0 +1,49 @@
+/* FaceVault — Tema: Cyber | Sky Blue + Midnight */
+:root {
+    --c-primary:      #0ea5e9;
+    --c-primary-d:    #0284c7;
+    --c-primary-l:    #e0f2fe;
+    --c-primary-ring: rgba(14,165,233,.22);
+    --c-success:      #10b981; --c-success-l: #d1fae5;
+    --c-danger:       #ef4444; --c-danger-l:  #fee2e2;
+    --c-warning:      #f59e0b; --c-warning-l: #fef3c7;
+    --c-info:         #6366f1; --c-info-l:    #e0e7ff;
+    --c-50:  #f4f6f9; --c-100: #e2e8f0; --c-200: #cbd5e1;
+    --c-300: #94a3b8; --c-400: #64748b; --c-500: #475569;
+    --c-700: #1e293b; --c-900: #0f172a;
+    --r-sm: 4px; --r-md: 6px; --r-lg: 10px; --r-xl: 14px;
+}
+.dark {
+    --c-primary:      #38bdf8;
+    --c-primary-d:    #0ea5e9;
+    --c-primary-l:    #0c4a6e;
+    --c-primary-ring: rgba(56,189,248,.22);
+    --c-white: #111827; --c-50: #030712; --c-100: #1f2937;
+    --c-200: #374151;   --c-300: #4b5563; --c-400: #6b7280;
+    --c-500: #9ca3af;   --c-700: #d1d5db; --c-900: #f9fafb;
+    --c-success: #34d399; --c-success-l: #064e3b;
+    --c-danger:  #f87171; --c-danger-l:  #450a0a;
+    --c-warning: #fbbf24; --c-warning-l: #451a03;
+    --c-info:    #818cf8; --c-info-l:    #1e1b4b;
+}
+body { background-color: var(--c-50); background-image: linear-gradient(var(--c-100) 1px, transparent 1px), linear-gradient(90deg, var(--c-100) 1px, transparent 1px); background-size: 30px 30px; }
+.dark body { background-image: linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px); }
+.bg-orb--1 { background: #0ea5e9; opacity: .12; }
+.bg-orb--2 { background: #6366f1; opacity: .10; }
+.bg-orb--3 { background: #38bdf8; opacity: .07; }
+.navbar__brand { color: var(--c-primary); letter-spacing: -.5px; text-transform: uppercase; }
+.auth-brand { background: linear-gradient(135deg, #020617 0%, #0f172a 100%); border-right: 1px solid rgba(14,165,233,.3); border-radius: var(--r-xl); }
+.auth-brand::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(45deg, rgba(14,165,233,.02) 0px, rgba(14,165,233,.02) 1px, transparent 1px, transparent 10px); pointer-events: none; }
+.auth-brand__icon { color: #38bdf8; }
+.auth-brand__features .material-symbols-rounded { color: #38bdf8; }
+.camera-guide { border-radius: var(--r-md); border-color: rgba(14,165,233,.4); box-shadow: 0 0 0 9999px rgba(0,0,0,.45), inset 0 0 20px rgba(14,165,233,.08); }
+.camera-box::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #0ea5e9; box-shadow: 0 0 15px 3px rgba(14,165,233,.8); animation: bioscan 3s linear infinite; z-index: 10; pointer-events: none; }
+@keyframes bioscan { 0% { top: -5%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 105%; opacity: 0; } }
+.progress-bar__fill { background: linear-gradient(90deg, #0ea5e9, #38bdf8); box-shadow: 0 0 10px rgba(14,165,233,.4); }
+.stat-card { border-left: 4px solid var(--c-300); }
+.stat-card--blue  { border-left-color: var(--c-primary); }
+.stat-card--green { border-left-color: var(--c-success); }
+.stat-card--orange { border-left-color: var(--c-warning); }
+.stat-card--red   { border-left-color: var(--c-danger); }
+.stat-card strong { font-family: monospace; }
+@keyframes task-pulse { 0% { box-shadow: 0 0 0 0 rgba(14,165,233,.4); } 60% { box-shadow: 0 0 0 8px rgba(14,165,233,0); } 100% { box-shadow: 0 0 0 0 rgba(14,165,233,0); } }

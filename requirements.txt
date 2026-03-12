@@ -1,0 +1,12 @@
+# Framework web
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-WTF==1.2.1
+WTForms==3.1.2
+email-validator==2.1.1
+SQLAlchemy==2.0.30
+
+# Visão computacional — compatível com Python 3.14, sem compilação
+opencv-contrib-python
+numpy

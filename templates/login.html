@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+
+    <!-- Painel esquerdo: visual/branding -->
+    <div class="auth-brand">
+        <span class="material-symbols-rounded auth-brand__icon">enhanced_encryption</span>
+        <h1 class="auth-brand__title">FaceVault</h1>
+        <p class="auth-brand__desc">Seu gerenciador de tarefas protegido por reconhecimento facial</p>
+
+        <!-- Lista de recursos do sistema -->
+        <ul class="auth-brand__features">
+            <li>
+                <span class="material-symbols-rounded">shield</span>
+                Autenticação multifator (CPF + celular + rosto)
+            </li>
+            <li>
+                <span class="material-symbols-rounded">face</span>
+                Reconhecimento com IA (DeepFace / ArcFace)
+            </li>
+            <li>
+                <span class="material-symbols-rounded">lock</span>
+                Tarefas isoladas e privadas por usuário
+            </li>
+        </ul>
+    </div>
+
+    <!-- Painel direito: formulário de login -->
+    <div class="auth-card">
+        <h2 class="auth-card__title">Entrar na sua conta</h2>
+        <p class="auth-card__sub">Login em 3 etapas seguras</p>
+
+        <!-- Indicador de progresso das 3 etapas -->
+        <div class="stepper">
+            <div class="stepper__item stepper__item--active" id="si-1">
+                <div class="stepper__circle">1</div>
+                <span>CPF</span>
+            </div>
+            <div class="stepper__line"></div>
+            <div class="stepper__item" id="si-2">
+                <div class="stepper__circle">2</div>
+                <span>Celular</span>
+            </div>
+            <div class="stepper__line"></div>
+            <div class="stepper__item" id="si-3">
+                <div class="stepper__circle">3</div>
+                <span>Rosto</span>
+            </div>
+        </div>
+
+        <!-- Área de alerta dinâmico preenchida pelo JavaScript -->
+        <div id="alert-box" class="inline-alert" style="display:none;"></div>
+
+        <!-- ── Etapa 1: CPF ── -->
+        <div id="step-1" class="step-panel">
+            <div class="form-group">
+                <label class="form-label">CPF</label>
+                <div class="input-row">
+                    <span class="material-symbols-rounded input-row__icon">badge</span>
+                    <!-- maxlength impede digitação além de 11 caracteres -->
+                    <input type="text" id="cpf" class="form-input" maxlength="11"
+                           placeholder="Somente números" autocomplete="off" inputmode="numeric">
+                </div>
+            </div>
+            <button id="btn-cpf" class="btn btn--primary btn--block">
+                Verificar CPF <span class="material-symbols-rounded">arrow_forward</span>
+            </button>
+        </div>
+
+        <!-- ── Etapa 2: Celular (oculta até o CPF ser validado) ── -->
+        <div id="step-2" class="step-panel" style="display:none;">
+            <div class="form-group">
+                <label class="form-label">Celular com DDD</label>
+                <div class="input-row">
+                    <span class="material-symbols-rounded input-row__icon">phone_android</span>
+                    <input type="text" id="celular" class="form-input"
+                           placeholder="Ex: 14999998888" autocomplete="off" inputmode="numeric">
+                </div>
+            </div>
+            <button id="btn-cel" class="btn btn--primary btn--block">
+                Verificar Celular <span class="material-symbols-rounded">arrow_forward</span>
+            </button>
+        </div>
+
+        <!-- ── Etapa 3: Captura facial (oculta até celular ser validado) ── -->
+        <div id="step-3" class="step-panel" style="display:none;">
+            <p class="camera-tip">
+                <span class="material-symbols-rounded">lightbulb</span>
+                Posicione seu rosto centralizado com boa iluminação
+            </p>
+            <!-- Container da webcam com overlay de guia oval -->
+            <div class="camera-box" id="camera-box">
+                <video id="video" autoplay playsinline muted></video>
+                <div class="camera-guide"></div>
+                <!-- Canvas oculto para capturar o frame sem exibir ao usuário -->
+                <canvas id="canvas" style="display:none;"></canvas>
+            </div>
+            <button id="btn-capture" class="btn btn--primary btn--block">
+                <span class="material-symbols-rounded">photo_camera</span>
+                Capturar e Entrar
+            </button>
+        </div>
+
+        <!-- Link para cadastro de novo usuário -->
+        <p class="auth-card__link">
+            Não tem conta? <a href="{{ url_for('auth.register') }}">Cadastre-se aqui</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

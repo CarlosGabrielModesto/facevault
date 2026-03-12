@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+
+    <header class="dash-header">
+        <div class="dash-header__info">
+            <div class="avatar avatar--lg">{{ current_user.nome[0] }}{{ current_user.sobrenome[0] }}</div>
+            <div>
+                <h1 class="dash-header__title">Olá, {{ current_user.nome }}!</h1>
+                <p class="dash-header__sub">Aqui estão suas tarefas de hoje</p>
+            </div>
+        </div>
+        <div class="dash-header__actions">
+            {% if current_user.is_admin %}
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn--ghost btn--sm">
+                <span class="material-symbols-rounded">admin_panel_settings</span> Admin
+            </a>
+            {% endif %}
+            <a href="{{ url_for('tasks.add_task') }}" class="btn btn--primary">
+                <span class="material-symbols-rounded">add_circle</span> Nova Tarefa
+            </a>
+        </div>
+    </header>
+
+    <!-- Estatísticas -->
+    <div class="stats" id="stats-row">
+        <div class="stat-card stat-card--blue">
+            <span class="material-symbols-rounded">assignment</span>
+            <div><strong id="st-total">{{ tasks|length }}</strong><small>Total</small></div>
+        </div>
+        <div class="stat-card stat-card--green">
+            <span class="material-symbols-rounded">task_alt</span>
+            <div><strong id="st-done">{{ tasks|selectattr('completed')|list|length }}</strong><small>Concluídas</small></div>
+        </div>
+        <div class="stat-card stat-card--orange">
+            <span class="material-symbols-rounded">pending_actions</span>
+            <div><strong id="st-pending">{{ tasks|rejectattr('completed')|list|length }}</strong><small>Pendentes</small></div>
+        </div>
+        <div class="stat-card stat-card--red">
+            <span class="material-symbols-rounded">priority_high</span>
+            <div><strong id="st-high">{{ tasks|selectattr('priority','equalto',3)|rejectattr('completed')|list|length }}</strong><small>Alta Prior.</small></div>
+        </div>
+    </div>
+
+    <!-- Cards de prioridade -->
+    {% set high = tasks|selectattr('priority','equalto',3)|rejectattr('completed')|list|length %}
+    {% set med  = tasks|selectattr('priority','equalto',2)|rejectattr('completed')|list|length %}
+    {% set low  = tasks|selectattr('priority','equalto',1)|rejectattr('completed')|list|length %}
+    <div class="priority-cards">
+        <div class="priority-card priority-card--high">
+            <div class="priority-card__left">
+                <span class="material-symbols-rounded">keyboard_double_arrow_up</span>
+                <span>Alta Prioridade</span>
+            </div>
+            <strong id="pc-high">{{ high }}</strong>
+        </div>
+        <div class="priority-card priority-card--medium">
+            <div class="priority-card__left">
+                <span class="material-symbols-rounded">drag_handle</span>
+                <span>Média Prioridade</span>
+            </div>
+            <strong id="pc-med">{{ med }}</strong>
+        </div>
+        <div class="priority-card priority-card--low">
+            <div class="priority-card__left">
+                <span class="material-symbols-rounded">keyboard_double_arrow_down</span>
+                <span>Baixa Prioridade</span>
+            </div>
+            <strong id="pc-low">{{ low }}</strong>
+        </div>
+    </div>
+
+    <!-- Barra de progresso -->
+    {% if tasks|length > 0 %}
+    {% set done  = tasks|selectattr('completed')|list|length %}
+    {% set total = tasks|length %}
+    {% set pct   = ((done / total) * 100)|int %}
+    <div class="progress-wrap" id="progress-wrap">
+        <div class="progress-info">
+            <span>Progresso geral</span>
+            <span id="progress-label"><strong>{{ done }}</strong> de <strong>{{ total }}</strong> — {{ pct }}%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-bar__fill" id="progress-fill" style="width: {{ pct }}%;"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Lista de tarefas -->
+    {% if tasks %}
+    <h2 class="section-title">Suas Tarefas</h2>
+    <div class="task-list" id="task-list">
+        {% for task in tasks %}
+        <div class="task-item {% if task.completed %}task-item--done{% endif %}"
+             id="task-{{ task.id }}"
+             data-task-id="{{ task.id }}"
+             data-completed="{{ 'true' if task.completed else 'false' }}"
+             data-priority="{{ task.priority }}"
+             data-toggle-url="{{ url_for('tasks.toggle_task_ajax', task_id=task.id) }}">
+
+            <!-- Checkbox customizado -->
+            <button class="task-checkbox" title="Marcar como concluída" onclick="toggleTask(event, {{ task.id }})">
+                <span class="task-checkbox__ring"></span>
+                <span class="material-symbols-rounded task-checkbox__icon">
+                    {% if task.completed %}check_circle{% else %}radio_button_unchecked{% endif %}
+                </span>
+            </button>
+
+            <div class="task-item__body">
+                <p class="task-item__title">{{ task.title }}</p>
+                {% if task.description %}
+                <p class="task-item__desc">{{ task.description }}</p>
+                {% endif %}
+                <div class="task-item__meta">
+                    <span>
+                        <span class="material-symbols-rounded">calendar_today</span>
+                        {{ task.criado_em.strftime('%d/%m/%Y') }}
+                    </span>
+                </div>
+            </div>
+
+            <span class="badge badge--{{ task.priority_color }}">{{ task.priority_label }}</span>
+
+            <div class="task-item__actions">
+                <a href="{{ url_for('tasks.update_task', task_id=task.id) }}"
+                   class="btn btn--icon btn--ghost" title="Editar">
+                    <span class="material-symbols-rounded">edit</span>
+                </a>
+                <a href="{{ url_for('tasks.delete_task', task_id=task.id) }}"
+                   class="btn btn--icon btn--danger-ghost" title="Excluir"
+                   onclick="return confirm('Confirma a exclusão?')">
+                    <span class="material-symbols-rounded">delete</span>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty">
+        <span class="material-symbols-rounded empty__icon">check_box</span>
+        <p class="empty__title">Tudo limpo por aqui!</p>
+        <p class="empty__sub">Crie sua primeira tarefa clicando em "Nova Tarefa".</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function toggleTask(event, taskId) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const card     = document.getElementById('task-' + taskId);
+    const btn      = card.querySelector('.task-checkbox');
+    const icon     = card.querySelector('.task-checkbox__icon');
+    const url      = card.dataset.toggleUrl;
+
+    // Feedback imediato: desativa o botão durante a requisição
+    btn.disabled = true;
+
+    try {
+        const res  = await fetch(url, { method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }});
+        const data = await res.json();
+
+        const completed = data.completed;
+
+        // Atualiza o card visualmente
+        card.dataset.completed = completed ? 'true' : 'false';
+
+        if (completed) {
+            card.classList.add('task-item--done');
+            icon.textContent = 'check_circle';
+        } else {
+            card.classList.remove('task-item--done');
+            icon.textContent = 'radio_button_unchecked';
+        }
+
+        // Anima o card: pulsa uma vez para confirmar
+        card.classList.add('task-item--pulse');
+        setTimeout(() => card.classList.remove('task-item--pulse'), 400);
+
+        // Recalcula e atualiza os contadores sem recarregar a página
+        updateCounters();
+
+    } catch (err) {
+        console.error('Erro ao atualizar tarefa:', err);
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+function updateCounters() {
+    const cards    = document.querySelectorAll('.task-item[data-task-id]');
+    let total      = cards.length;
+    let done       = 0;
+    let highPend   = 0;
+    let medPend    = 0;
+    let lowPend    = 0;
+
+    cards.forEach(c => {
+        const completed = c.dataset.completed === 'true';
+        const priority  = parseInt(c.dataset.priority);
+        if (completed) {
+            done++;
+        } else {
+            if (priority === 3) highPend++;
+            else if (priority === 2) medPend++;
+            else lowPend++;
+        }
+    });
+
+    const pending = total - done;
+    const pct     = total > 0 ? Math.round((done / total) * 100) : 0;
+
+    // Atualiza stat cards
+    const el = id => document.getElementById(id);
+    if (el('st-total'))   el('st-total').textContent   = total;
+    if (el('st-done'))    el('st-done').textContent    = done;
+    if (el('st-pending')) el('st-pending').textContent = pending;
+    if (el('st-high'))    el('st-high').textContent    = highPend;
+
+    // Atualiza priority cards
+    if (el('pc-high')) el('pc-high').textContent = highPend;
+    if (el('pc-med'))  el('pc-med').textContent  = medPend;
+    if (el('pc-low'))  el('pc-low').textContent  = lowPend;
+
+    // Atualiza barra de progresso
+    if (el('progress-fill')) {
+        el('progress-fill').style.width = pct + '%';
+        el('progress-label').innerHTML =
+            `<strong>${done}</strong> de <strong>${total}</strong> — ${pct}%`;
+    }
+}
+</script>
+{% endblock %}

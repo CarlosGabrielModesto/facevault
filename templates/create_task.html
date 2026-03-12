@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}{% if task %}Editar Tarefa{% else %}Nova Tarefa{% endif %}{% endblock %}
+
+{% block content %}
+<div class="auth-wrap auth-wrap--center">
+    <div class="auth-card">
+
+        <!-- Ícone e título dinâmicos conforme criação ou edição -->
+        <div class="auth-card__icon-wrap">
+            <span class="material-symbols-rounded">
+                {% if task %}edit_note{% else %}add_task{% endif %}
+            </span>
+        </div>
+        <h2 class="auth-card__title">
+            {% if task %}Editar Tarefa{% else %}Nova Tarefa{% endif %}
+        </h2>
+
+        <!-- Formulário com proteção CSRF -->
+        <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="form-group">
+                {{ form.title.label(class='form-label') }}
+                <div class="input-row">
+                    <span class="material-symbols-rounded input-row__icon">title</span>
+                    {{ form.title(class='form-input', placeholder='Ex: Revisar artigo de ML') }}
+                </div>
+                <!-- Erros de validação do título -->
+                {% for e in form.title.errors %}<span class="form-err">{{ e }}</span>{% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.description.label(class='form-label') }}
+                <!-- Textarea sem ícone lateral -->
+                {{ form.description(class='form-input form-textarea', placeholder='Descrição detalhada (opcional)', rows=4) }}
+                {% for e in form.description.errors %}<span class="form-err">{{ e }}</span>{% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.priority.label(class='form-label') }}
+                <!-- Select de prioridade com emojis nas opções -->
+                {{ form.priority(class='form-input') }}
+                {% for e in form.priority.errors %}<span class="form-err">{{ e }}</span>{% endfor %}
+            </div>
+
+            <!-- Ações: cancelar volta ao dashboard, salvar envia -->
+            <div class="form-actions">
+                <a href="{{ url_for('tasks.index') }}" class="btn btn--ghost">
+                    <span class="material-symbols-rounded">arrow_back</span> Cancelar
+                </a>
+                {{ form.submit(class='btn btn--primary') }}
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}

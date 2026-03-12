@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Captura Facial{% endblock %}
+
+{% block content %}
+<div class="auth-wrap auth-wrap--center">
+    <div class="auth-card auth-card--camera">
+
+        <h2 class="auth-card__title">Captura Facial</h2>
+        <p class="auth-card__sub">Última etapa — posicione seu rosto no oval e clique em capturar</p>
+
+        <!-- Alerta de feedback preenchido pelo JavaScript -->
+        <div id="alert-box" class="inline-alert" style="display:none;"></div>
+
+        <!-- E-mail confirmado do usuário -->
+        <div class="camera-user-info">
+            <span class="material-symbols-rounded">account_circle</span>
+            <span>{{ email }}</span>
+        </div>
+
+        <!-- Container da webcam com overlay de posicionamento -->
+        <div class="camera-box">
+            <video id="video" autoplay playsinline muted></video>
+            <!-- Oval tracejado indica onde o rosto deve ficar -->
+            <div class="camera-guide"></div>
+            <!-- Canvas oculto para captura do frame -->
+            <canvas id="canvas" style="display:none;"></canvas>
+
+            <!-- Dica visual de posicionamento -->
+            <div class="camera-label">Centralize seu rosto aqui</div>
+        </div>
+
+        <!-- Botão de captura e submit -->
+        <button id="btn-capture" class="btn btn--primary btn--block">
+            <span class="material-symbols-rounded">photo_camera</span>
+            Capturar e Finalizar Cadastro
+        </button>
+
+        <!-- Campos ocultos que transportam os dados do formulário anterior -->
+        <input type="hidden" id="h-email"    value="{{ email }}">
+        <input type="hidden" id="h-nome"     value="{{ nome }}">
+        <input type="hidden" id="h-sobre"    value="{{ sobrenome }}">
+        <input type="hidden" id="h-cpf"      value="{{ cpf }}">
+        <input type="hidden" id="h-cel"      value="{{ celular }}">
+        <input type="hidden" id="h-nasc"     value="{{ data_nascimento }}">
+        <input type="hidden" id="h-genero"   value="{{ genero }}">
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/register_capture.js') }}"></script>
+{% endblock %}

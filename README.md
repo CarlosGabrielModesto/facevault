@@ -1,27 +1,23 @@
-# 🔐 FaceVault
+# FaceVault
 
-**Gerenciador de tarefas com autenticação facial em 3 etapas**
+Gerenciador de tarefas com autenticação facial em 3 etapas.
 
 > Projeto desenvolvido para o XIII JORNACITEC 2024 — UNESP/FCA Botucatu  
 > Demonstração de visão computacional aplicada a sistemas web com Python + Flask
 
----
+## Funcionalidades
 
-## ✨ Funcionalidades
+- Autenticação em 3 fatores: CPF → Celular → Reconhecimento Facial (LBPH)
+- Reconhecimento facial com OpenCV LBPH e detecção anti-spoofing (rejeita mãos, objetos e outros rostos)
+- Gerenciamento de tarefas: criar, editar, concluir e excluir tarefas com prioridades
+- Dashboard com estatísticas em tempo real via AJAX, sem recarregar a página
+- Painel de administração para ativar ou bloquear contas, promover admins e excluir usuários
+- Primeiro acesso redirecionado para `/setup` para criação do administrador inicial
+- Quatro temas visuais por usuário: Vault, Obsidian, Cyber e Terminal
+- Dark mode com toggle persistente e transições suaves
+- Interface responsiva para desktop e mobile
 
-- **Autenticação em 3 fatores**: CPF → Celular → Reconhecimento Facial (LBPH)
-- **Reconhecimento facial robusto**: OpenCV LBPH com detecção anti-spoofing (rejeita mãos, objetos, outros rostos)
-- **Gerenciamento de tarefas**: Criar, editar, concluir e excluir tarefas com prioridades
-- **Dashboard interativo**: Estatísticas em tempo real via AJAX, sem recarregar a página
-- **Painel de administração**: Ativar/bloquear contas, promover admins, excluir usuários
-- **First-run wizard**: Primeiro acesso redireciona para `/setup` e cria o admin inicial
-- **Temas visuais**: 4 temas selecionáveis por usuário — Vault, Obsidian, Cyber e Terminal
-- **Dark mode**: Toggle persistente com transições suaves
-- **Design responsivo**: Funciona em desktop e mobile
-
----
-
-## 🚀 Como rodar
+## Como executar
 
 ```bash
 # 1. Clone o repositório
@@ -40,14 +36,12 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Acesse **http://127.0.0.1:5000** — na primeira execução o sistema redireciona automaticamente para `/setup` para criar o administrador.
+Acesse **http://127.0.0.1:5000**. Na primeira execução, o sistema redireciona automaticamente para `/setup` para criar o administrador.
 
 > **Requisito**: Python 3.10+  
 > **Câmera**: Necessária para registro e login facial
 
----
-
-## 🛠 Tecnologias
+## Tecnologias
 
 | Camada | Tecnologia |
 |---|---|
@@ -57,11 +51,9 @@ Acesse **http://127.0.0.1:5000** — na primeira execução o sistema redirecion
 | Frontend | HTML5, CSS3 (Design System próprio), JavaScript ES2022 |
 | Banco de dados | SQLite (desenvolvimento) |
 
----
+## Estrutura do projeto
 
-## 📁 Estrutura do projeto
-
-```
+```text
 facevault/
 ├── app.py                  # Application factory + first-run redirect
 ├── config.py               # Configurações
@@ -92,11 +84,9 @@ facevault/
     └── js/
 ```
 
----
+## Temas visuais
 
-## 🎨 Temas visuais
-
-Cada usuário pode escolher seu tema na página de perfil. O tema é salvo no banco e aplicado automaticamente no próximo login.
+Cada usuário pode escolher o tema na página de perfil. O tema é salvo no banco de dados e aplicado automaticamente no próximo login.
 
 | Tema | Cor principal | Estilo |
 |---|---|---|
@@ -105,31 +95,25 @@ Cada usuário pode escolher seu tema na página de perfil. O tema é salvo no ba
 | **Cyber** | Sky Blue `#0ea5e9` | Grid animado + scanner biométrico |
 | **Terminal** | Zinc `#0284c7` | Visual de software, bordas retas |
 
----
-
-## 🔒 Segurança
+## Segurança
 
 - Senhas com hash bcrypt
 - CSRF protection em todos os formulários (Flask-WTF)
 - Reconhecimento facial com threshold calibrado (`LBPH_THRESHOLD = 75.0`)
 - Detecção anti-spoofing: `minNeighbors=6`, `minSize=(100,100)`, validação de aspect ratio
 - Banco de dados e imagens faciais **nunca versionados** (`.gitignore`)
-- Verificação de propriedade em todas as rotas de tarefa (usuário só acessa os próprios dados)
+- Verificação de propriedade em todas as rotas de tarefa (o usuário acessa apenas os próprios dados)
 
----
-
-## 👤 Autor
+## Autor
 
 **Carlos Gabriel dos Santos Modesto**  
 Mestrando em Engenharia Agrícola — UNESP/FCA Botucatu  
 Engenheiro de Computação — Faculdade Galileu (2024)  
 Bolsista CNPq
 
-[![Lattes](https://img.shields.io/badge/Lattes-CNPq-blue?style=flat-square)](http://lattes.cnpq.br/9699036690474846)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Conectar-0077B5?style=flat-square&logo=linkedin)](https://linkedin.com/in/SEU-LINKEDIN)
+[Lattes](http://lattes.cnpq.br/9699036690474846)  
+[LinkedIn](https://linkedin.com/in/SEU-LINKEDIN)
 
----
-
-## 📄 Licença
+## Licença
 
 MIT — livre para estudar, modificar e usar como referência.
